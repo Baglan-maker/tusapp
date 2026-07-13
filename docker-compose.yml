@@ -1,0 +1,20 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: tus-db
+    environment:
+      POSTGRES_USER: tus
+      POSTGRES_PASSWORD: tus
+      POSTGRES_DB: tus
+    ports:
+      - "5432:5432"
+    volumes:
+      - tus_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tus -d tus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  tus_pgdata:
