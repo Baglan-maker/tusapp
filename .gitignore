@@ -39,6 +39,9 @@ apps/mobile/android/
 *.key
 *.mobileprovision
 
+# ---- Eval reports (generated) ----
+apps/api/eval_reports/
+
 # ---- OS / editor ----
 .DS_Store
 .idea/

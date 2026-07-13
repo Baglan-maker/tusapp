@@ -20,11 +20,25 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     elevenlabs_api_key: str = ""
 
-    # LLM
+    # LLM (Anthropic). Extraction stays on Haiku; interpretation model is
+    # swappable so we can eval Haiku vs Sonnet on the golden set.
     anthropic_api_key: str = ""
+    extract_model: str = "claude-haiku-4-5"
+    interpret_model: str = "claude-haiku-4-5"
 
     # Embeddings
     openai_api_key: str = ""
+    embedding_model: str = "text-embedding-3-small"
+
+    # ElevenLabs Scribe STT model id (Kazakh path)
+    elevenlabs_stt_model: str = "scribe_v2"
+
+    # Reject request bodies larger than this (audio upload guard), in bytes.
+    max_upload_bytes: int = 10 * 1024 * 1024
+
+    # AI call hardening
+    ai_timeout_seconds: float = 30.0
+    ai_max_retries: int = 2
 
 
 settings = Settings()

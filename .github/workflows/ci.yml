@@ -12,6 +12,20 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: tus
+          POSTGRES_PASSWORD: tus
+          POSTGRES_DB: tus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tus -d tus"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -26,6 +40,8 @@ jobs:
           uv run ruff format --check .
       - name: Typecheck (mypy)
         run: uv run mypy app
+      - name: Migrate (alembic)
+        run: uv run alembic upgrade head
       - name: Tests (pytest)
         run: uv run pytest
 
