@@ -116,8 +116,8 @@ export function Screen({
   return (
     <View style={styles.root}>
       <LinearGradient
-        colors={backgroundGradient as unknown as string[]}
-        locations={backgroundLocations as unknown as number[]}
+        colors={backgroundGradient}
+        locations={backgroundLocations}
         style={StyleSheet.absoluteFill}
       />
       <Nebula />

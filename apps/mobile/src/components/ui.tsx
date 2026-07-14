@@ -77,7 +77,7 @@ export function GoldButton({
   return (
     <Pressable onPress={onPress} disabled={disabled} style={[{ opacity: disabled ? 0.4 : 1 }, style]}>
       <LinearGradient
-        colors={goldGradient as unknown as string[]}
+        colors={goldGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.cta}
