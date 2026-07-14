@@ -3,14 +3,12 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_session
 from app.deps import current_user_id
 from app.models.dream import Dream
-from app.models.user import User
 from app.prompts import Lens
 from app.ratelimit import limiter
 from app.schemas.dream import (
@@ -19,7 +17,8 @@ from app.schemas.dream import (
     TranscriptOut,
     TranscriptUpdate,
 )
-from app.services import pipeline, quota, stt
+from app.services import emotions, pipeline, quota, stt
+from app.services.users import ensure_user
 
 router = APIRouter(prefix="/dreams", tags=["dreams"])
 
@@ -38,6 +37,10 @@ def create_dream(
     language: Annotated[Language, Form()],
     text: Annotated[str | None, Form()] = None,
     audio: Annotated[UploadFile | None, File()] = None,
+    # The two chip rows shown right after recording. Comma-separated slugs —
+    # multipart has no native list type.
+    emotions_in_dream: Annotated[str | None, Form()] = None,
+    emotions_on_waking: Annotated[str | None, Form()] = None,
 ) -> DreamCreateOut:
     """Create a dream from either a finished transcript or an audio recording.
 
@@ -57,9 +60,14 @@ def create_dream(
         assert text is not None
         transcript = text.strip()
 
-    _ensure_user(session, user_id, language)
+    ensure_user(session, user_id, language)
     dream = Dream(user_id=user_id, transcript=transcript, language=language)
     session.add(dream)
+    session.flush()
+
+    emotions.attach(session, dream.id, emotions.parse_slugs(emotions_in_dream), "in_dream")
+    emotions.attach(session, dream.id, emotions.parse_slugs(emotions_on_waking), "on_waking")
+
     session.commit()
     session.refresh(dream)
     return DreamCreateOut(dream_id=dream.id, transcript=dream.transcript, language=dream.language)
@@ -116,13 +124,3 @@ def _get_own_dream(session: Session, dream_id: uuid.UUID, user_id: uuid.UUID) ->
     if dream is None:
         raise HTTPException(404, "dream not found")
     return dream
-
-
-def _ensure_user(session: Session, user_id: uuid.UUID, language: str) -> None:
-    """Upsert the user row (id == Supabase JWT `sub`) so the dream FK holds."""
-    session.execute(
-        insert(User)
-        .values(id=user_id, locale=language)
-        .on_conflict_do_nothing(index_elements=[User.id])
-    )
-    session.flush()

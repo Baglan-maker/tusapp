@@ -29,6 +29,26 @@ verifies the JWT and owns all business logic. Supabase RLS is defense-in-depth,
 - Audio is **deleted after successful transcription** by default (privacy + storage).
 - No `packages/shared` / OpenAPI type-gen yet (premature).
 
+## Design tokens (apps/mobile) — "Предрассветный час"
+
+Reference mock: [tus-ui-v2.html](tus-ui-v2.html). Dark theme is the **only** theme.
+
+```
+Background   linear-gradient 178deg  #221A4A → #120D2C (52%) → #0F0B22
+Surfaces     rgba(46,37,89,.38) · border rgba(167,155,200,.16) · blur 6
+Accent       GOLD ONLY — #F6E9CC (champagne) → #E9C87E (gold) → #CEA45A (gold-deep)
+Text         #F5F2FB (dawn) · secondary #A79BC8 (lilac) · dim #7B6FA0
+Radii        cards 24 · buttons 28 (height 56) · chips 18 · tags 14
+Fonts        display = Alice (400 only — no bold display) — LARGE HEADINGS ONLY
+             Manrope 400–800 — everything else
+Atmosphere   nebula glows, twinkling stars, film grain (opacity .05)
+Moon button  176px · breathe 4.2s · scale 1 → 1.045
+```
+
+**Hard rules:** no neon. No emoji in the UI — line SVG icons only (stroke 1.6–2).
+Honor `prefers-reduced-motion` / `AccessibilityInfo.isReduceMotionEnabled` — kill
+the breathing and twinkling when it is on.
+
 ## Conventions
 
 - **Code and comments in English.** UI strings go through i18n (ru/kk); en keys later.

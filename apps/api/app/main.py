@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse
 from app import auth
 from app.config import settings
 from app.ratelimit import limiter
-from app.routers import dreams, health
+from app.routers import dreams, health, profile
 
 app = FastAPI(title="Tús API", version="0.1.0")
 
@@ -58,4 +58,5 @@ async def authenticate(
 
 
 app.include_router(health.router)
+app.include_router(profile.router)
 app.include_router(dreams.router)

@@ -10,12 +10,11 @@ from app.models.dream import Dream
 from app.models.dream_embedding import DreamEmbedding
 from app.models.dream_emotion import DreamEmotion
 from app.models.dream_symbol import DreamSymbol
-from app.models.emotion import Emotion
 from app.models.interpretation import Interpretation
 from app.models.symbol import Symbol
 from app.prompts import Lens
 from app.schemas.extraction import DreamExtraction
-from app.services import context, embeddings, llm
+from app.services import context, embeddings, emotions, llm
 
 
 def interpret_dream(session: Session, dream: Dream, lens: Lens) -> Interpretation:
@@ -94,8 +93,10 @@ def _get_or_create_symbol(session: Session, slug: str) -> uuid.UUID:
 
 
 def _persist_emotions(session: Session, dream_id: uuid.UUID, extraction: DreamExtraction) -> None:
+    """LLM-extracted emotions. The user's own chips land here too, via the same
+    upsert — see services/emotions.attach."""
     for item in extraction.emotions:
-        emotion_id = _get_or_create_emotion(session, item.slug)
+        emotion_id = emotions.get_or_create_emotion(session, item.slug)
         session.execute(
             insert(DreamEmotion)
             .values(dream_id=dream_id, emotion_id=emotion_id, kind=item.kind)
@@ -108,19 +109,6 @@ def _persist_emotions(session: Session, dream_id: uuid.UUID, extraction: DreamEx
             )
         )
     session.flush()
-
-
-def _get_or_create_emotion(session: Session, slug: str) -> int:
-    existing = session.scalar(select(Emotion.id).where(Emotion.slug == slug))
-    if existing is not None:
-        return existing
-    session.execute(
-        insert(Emotion).values(slug=slug).on_conflict_do_nothing(index_elements=[Emotion.slug])
-    )
-    session.flush()
-    emotion_id = session.scalar(select(Emotion.id).where(Emotion.slug == slug))
-    assert emotion_id is not None
-    return emotion_id
 
 
 def _persist_embedding(session: Session, dream_id: uuid.UUID, transcript: str) -> None:
