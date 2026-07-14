@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     # Supabase
     supabase_url: str = ""
     supabase_service_key: str = ""
+    # JWTs are verified against Supabase's JWKS endpoint (asymmetric keys).
+    supabase_jwt_audience: str = "authenticated"
+
+    # Quotas / rate limiting
+    free_daily_interpretations: int = 1
+    rate_limit: str = "30/minute"
 
     # Speech-to-text
     groq_api_key: str = ""
@@ -29,6 +35,10 @@ class Settings(BaseSettings):
     # Embeddings
     openai_api_key: str = ""
     embedding_model: str = "text-embedding-3-small"
+
+    # Optional: only used by scripts/eval_golden.py to benchmark Gemini as a
+    # cheaper challenger for interpretation. Absent key = that column is skipped.
+    gemini_api_key: str = ""
 
     # ElevenLabs Scribe STT model id (Kazakh path)
     elevenlabs_stt_model: str = "scribe_v2"

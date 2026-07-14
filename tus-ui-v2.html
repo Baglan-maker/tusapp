@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Түс · UI v2 — «Предрассветный час»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alice&family=Cormorant+Garamond:wght@400;500;600&family=Lora:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Prata&display=swap" rel="stylesheet">
+<style>
+:root{
+  --midnight:#0F0B22; --deep:#151030; --depth:#221A4A; --haze:#2E2559;
+  --gold:#E9C87E; --gold-deep:#CEA45A; --champagne:#F6E9CC;
+  --lilac:#A79BC8; --lilac-dim:#7B6FA0; --dawn:#F5F2FB;
+  --display:'Cormorant Garamond',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0A0718;color:var(--dawn);font-family:'Manrope',sans-serif;padding:64px 48px 96px}
+.wrap{max-width:1560px;margin:0 auto}
+
+/* ---------- header ---------- */
+h1.brand{font-family:var(--display);font-weight:500;font-size:72px;letter-spacing:.01em}
+.brand em{font-style:italic;color:var(--gold)}
+.lede{color:var(--lilac);font-size:15px;max-width:640px;line-height:1.7;margin-top:14px}
+.rule{height:1px;background:linear-gradient(90deg,rgba(233,200,126,.4),rgba(233,200,126,0));margin:44px 0}
+
+/* ---------- font lab ---------- */
+.lab{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;margin-top:28px}
+.lab-card{border:1px solid rgba(167,155,200,.14);border-radius:20px;padding:26px 28px 22px;background:rgba(34,26,74,.18)}
+.lab-card.pick{border-color:rgba(233,200,126,.55);background:linear-gradient(180deg,rgba(233,200,126,.06),rgba(34,26,74,.2))}
+.lab-tag{font-size:10px;letter-spacing:.22em;color:var(--lilac);text-transform:uppercase;font-weight:600}
+.lab-card.pick .lab-tag{color:var(--gold)}
+.lab-sample{font-size:37px;line-height:1.15;margin:14px 0 12px;color:var(--dawn)}
+.lab-note{font-size:12.5px;color:var(--lilac);line-height:1.55}
+.f-prata{font-family:'Prata',serif}
+.f-corm{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:44px}
+.f-alice{font-family:'Alice',serif;font-size:36px}
+.f-lora{font-family:'Lora',serif;font-weight:500;font-size:34px}
+.sect{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:72px 0 8px}
+.sect+p{color:var(--lilac);font-size:14px;max-width:620px;line-height:1.7}
+
+/* ---------- phones ---------- */
+.grid{display:flex;flex-wrap:wrap;gap:44px;margin-top:40px}
+.phone{width:390px;height:844px;border-radius:44px;position:relative;overflow:hidden;flex:none;
+  background:linear-gradient(178deg,var(--depth) 0%,#120D2C 52%,var(--midnight) 100%);
+  border:1px solid rgba(167,155,200,.16);
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.7)}
+.phone.flat{background:linear-gradient(178deg,#191340 0%,var(--midnight) 68%)}
+.ph-label{position:absolute;left:0;right:0;bottom:-34px;text-align:center;font-size:12px;letter-spacing:.14em;color:var(--lilac-dim);text-transform:uppercase;font-weight:600}
+.holder{position:relative;padding-bottom:40px}
+.sky,.neb{position:absolute;inset:0;pointer-events:none}
+.neb i{position:absolute;border-radius:50%;filter:blur(2px)}
+.neb .g1{width:420px;height:420px;left:-160px;top:-140px;background:radial-gradient(circle,rgba(233,200,126,.10),transparent 65%)}
+.neb .g2{width:520px;height:520px;right:-200px;bottom:-160px;background:radial-gradient(circle,rgba(122,98,208,.16),transparent 62%)}
+.grain{position:absolute;inset:0;opacity:.05;pointer-events:none;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.star{position:absolute;border-radius:50%;background:var(--champagne)}
+.star.tw{animation:tw 4.5s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.8}}
+.content{position:relative;height:100%;padding:78px 28px 0;display:flex;flex-direction:column}
+
+/* type in screens */
+.eyebrow{font-size:10.5px;letter-spacing:.24em;font-weight:700;color:var(--gold);text-transform:uppercase}
+.kicker{font-size:11px;letter-spacing:.2em;font-weight:600;color:var(--lilac);text-transform:uppercase}
+.h-disp{font-family:var(--display);font-weight:500;color:var(--dawn)}
+.muted{color:var(--lilac)}
+
+/* shared components */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;font-size:12.5px;font-weight:600;
+  background:rgba(46,37,89,.5);border:1px solid rgba(233,200,126,.4);color:var(--gold)}
+.card{background:rgba(46,37,89,.38);border:1px solid rgba(167,155,200,.16);border-radius:24px;padding:22px;
+  backdrop-filter:blur(6px)}
+.cta{display:flex;align-items:center;justify-content:center;height:56px;border-radius:28px;
+  background:linear-gradient(100deg,var(--champagne),var(--gold) 60%,var(--gold-deep));
+  color:var(--midnight);font-weight:800;font-size:15px;letter-spacing:.01em;
+  box-shadow:0 10px 32px -8px rgba(233,200,126,.35)}
+.ghost{ text-align:center;font-size:14px;font-weight:600;color:var(--lilac);margin-top:16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 14px;border-radius:18px;font-size:12px;font-weight:600;color:var(--lilac);border:1px solid rgba(167,155,200,.28)}
+.chip.on{background:var(--gold);color:var(--midnight);border-color:var(--gold);font-weight:800}
+.tag{padding:6px 12px;border-radius:14px;font-size:11.5px;font-weight:600;color:var(--lilac);background:rgba(46,37,89,.55)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:80px;display:flex;justify-content:space-around;align-items:flex-start;
+  padding:14px 26px 0;background:rgba(18,13,44,.82);backdrop-filter:blur(12px);border-top:1px solid rgba(167,155,200,.14)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--lilac-dim)}
+.tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--gold)}
+.tab.on::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--gold)}
+
+/* 01 запись */
+.orbzone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:-30px}
+.orbring{position:relative;width:320px;height:320px;display:flex;align-items:center;justify-content:center}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(233,200,126,.22)}
+.r1{width:250px;height:250px}.r2{width:320px;height:320px;border-color:rgba(233,200,126,.1)}
+.orb{width:176px;height:176px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 32%,#FBF3E0 0%,var(--gold) 58%,var(--gold-deep) 100%);
+  box-shadow:0 0 90px 6px rgba(233,200,126,.4),0 0 200px 30px rgba(233,200,126,.12);
+  animation:breathe 4.2s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+.orb svg{width:34px;height:34px;stroke:var(--midnight);fill:none;stroke-width:2;stroke-linecap:round}
+
+/* 03 инсайты */
+.const{position:absolute;inset:0;pointer-events:none}
+.dots{display:flex;gap:10px}.dots i{width:10px;height:10px;border-radius:50%;background:rgba(46,37,89,.95)}
+.dots i.on{background:var(--gold);box-shadow:0 0 10px rgba(233,200,126,.5)}
+.bar{height:6px;border-radius:3px;background:var(--midnight);overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;border-radius:3px}
+
+/* 06 дневник */
+.entry{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid rgba(167,155,200,.1)}
+.eday{font-family:var(--display);font-size:30px;font-weight:500;color:var(--gold);width:44px;line-height:1;text-align:center}
+.eday small{display:block;font-family:'Manrope';font-size:9.5px;letter-spacing:.16em;color:var(--lilac-dim);font-weight:700;margin-top:4px}
+.etitle{font-size:15px;font-weight:600;color:var(--dawn)}
+.esub{font-size:12px;color:var(--lilac);margin-top:4px;line-height:1.45}
+
+/* 07 share card */
+.story{width:284px;height:472px;border-radius:26px;margin:6px auto 0;position:relative;overflow:hidden;
+  background:linear-gradient(175deg,#2A2058 0%,#141031 60%,#0F0B22 100%);
+  border:1px solid rgba(233,200,126,.35);box-shadow:0 30px 60px -20px rgba(0,0,0,.8)}
+.story .content{padding:34px 26px 0}
+
+/* 09 чат */
+.bub{max-width:82%;padding:13px 16px;border-radius:20px;font-size:13.5px;line-height:1.55;margin-top:12px}
+.bub.me{margin-left:auto;background:rgba(233,200,126,.14);border:1px solid rgba(233,200,126,.3);color:var(--champagne);border-bottom-right-radius:6px}
+.bub.ai{background:rgba(46,37,89,.5);border:1px solid rgba(167,155,200,.16);color:var(--dawn);border-bottom-left-radius:6px}
+.ask{position:absolute;left:20px;right:20px;bottom:96px;height:52px;border-radius:26px;display:flex;align-items:center;
+  padding:0 8px 0 20px;background:rgba(18,13,44,.9);border:1px solid rgba(167,155,200,.22);color:var(--lilac-dim);font-size:13.5px;justify-content:space-between}
+.mic{width:38px;height:38px;border-radius:50%;background:linear-gradient(120deg,var(--champagne),var(--gold));display:flex;align-items:center;justify-content:center}
+.mic svg{width:16px;height:16px;stroke:var(--midnight);fill:none;stroke-width:2;stroke-linecap:round}
+
+@media (prefers-reduced-motion:reduce){.orb,.star.tw{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1 class="brand">Түс <em>· v2</em></h1>
+<p class="lede">Направление «Предрассветный час», вторая итерация: живые фоны вместо плоской темноты, новый главный шрифт, девять экранов. Одно золото на глубоком фиолете, ноль неона.</p>
+
+<div class="rule"></div>
+
+<!-- ================= FONT LAB ================= -->
+<div class="sect">Шрифтовая лаборатория</div>
+<p>Одна и та же строка в четырёх кириллических серифах. Мой выбор — Cormorant Garamond: та же издательская порода, что у Prata, но мягче и воздушнее — «глянец», а не «нотариус».</p>
+<div class="lab">
+  <div class="lab-card"><div class="lab-tag">Prata · было</div><div class="lab-sample f-prata">Вода зовёт к переменам</div><div class="lab-note">Строгий дидон. Дорого, но холодно — согласен с тобой, для снов слишком официально.</div></div>
+  <div class="lab-card pick"><div class="lab-tag">✦ Cormorant Garamond · рекомендую</div><div class="lab-sample f-corm">Вода зовёт к переменам</div><div class="lab-note">Fashion-editorial: тонкий, текучий, с красивым курсивом. Люкс без строгости. Берём Medium/SemiBold.</div></div>
+  <div class="lab-card"><div class="lab-tag">Alice · тёплый вариант</div><div class="lab-sample f-alice">Вода зовёт к переменам</div><div class="lab-note">Книжный, сказочный — очень «про сны», но менее премиальный, скорее уютный.</div></div>
+  <div class="lab-card"><div class="lab-tag">Lora · безопасный вариант</div><div class="lab-sample f-lora">Вода зовёт к переменам</div><div class="lab-note">Мягкий и надёжный, но распространённый — теряем уникальность.</div></div>
+</div>
+
+<!-- ================= SCREENS ================= -->
+<div class="sect">Экраны</div>
+<p>Фоны теперь трёхслойные: туманности по углам, россыпь звёзд с лёгким мерцанием и киношное зерно. На «Инсайтах» звёзды соединяются в созвездие — паттерны снов и есть созвездия.</p>
+
+<div class="grid">
+
+<!-- 01 ЗАПИСЬ -->
+<div class="holder"><div class="phone">
+  <div class="neb"><i class="g1"></i><i class="g2"></i></div>
+  <div class="sky" data-stars="18"></div><div class="grain"></div>
+  <div class="content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div class="kicker">13 июля · раннее утро</div>
+      <div class="h-disp" style="font-size:34px;margin-top:8px">Доброе утро</div></div>
+      <div class="pill">☾ 12 ночей</div>
+    </div>
+    <div class="orbzone">
+      <div class="orbring"><div class="ring r1"></div><div class="ring r2"></div>
+        <div class="orb"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+      </div>
+      <div style="font-weight:700;font-size:18px;margin-top:34px">Расскажи свой сон</div>
+      <div class="muted" style="font-size:13px;margin-top:8px">60 секунд, пока он не растаял</div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab on"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>Сон</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13z"/></svg>Дневник</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8 3 4"/></svg>Инсайты</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>Профиль</div>
+  </div>
+</div><div class="ph-label">01 · Запись — Sleepy Mode</div></div>
+
+<!-- 02 ТОЛКОВАНИЕ -->
+<div class="holder"><div class="phone flat">
+  <div class="neb"><i class="g2"></i></div>
+  <div class="sky" data-stars="12"></div><div class="grain"></div>
+  <div class="content">
+    <div class="muted" style="font-size:14px;font-weight:500">‹&nbsp;&nbsp;Сегодня, 06:41</div>
+    <div class="eyebrow" style="margin-top:26px">Толкование</div>
+    <div class="h-disp" style="font-size:42px;line-height:1.08;margin-top:10px">Вода зовёт<br>к&nbsp;переменам</div>
+    <div class="chips" style="margin-top:20px">
+      <span class="chip on">Психология</span><span class="chip">Миллер</span><span class="chip">Ибн Сирин</span><span class="chip">Наука</span>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div style="font-size:14.5px;line-height:1.68;color:rgba(245,242,251,.92)">Спокойная вода в твоём сне — образ эмоций, которые ты пока сдерживаешь. Дом у берега говорит о поиске опоры: часть тебя готова к переменам, но хочет сохранить чувство безопасности.</div>
+      <div style="display:flex;gap:10px;margin-top:18px;padding-left:14px;border-left:1px solid rgba(233,200,126,.6)">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);line-height:1.5">Вода снится 3-ю ночь за месяц — смотреть паттерн&nbsp;→</div>
+      </div>
+    </div>
+    <div class="chips" style="margin-top:16px"><span class="tag">Вода</span><span class="tag">Дом</span><span class="tag">Берег</span></div>
+    <div style="margin-top:auto;margin-bottom:100px">
+      <div class="cta">Поделиться картой сна</div>
+      <div class="ghost">Задать вопрос сну&nbsp;&nbsp;→</div>
+    </div>
+  </div>
+</div><div class="ph-label">02 · Толкование</div></div>
+
+<!-- 03 ИНСАЙТЫ -->
+<div class="holder"><div class="phone flat">
+  <div class="neb"><i class="g1"></i></div>
+  <svg class="const" viewBox="0 0 390 844">
+    <g stroke="rgba(233,200,126,.28)" stroke-width="1" fill="none">
+      <path d="M60 140 L150 100 L250 150 L330 110 M250 150 L290 230"/>
+    </g>
+    <g fill="#F6E9CC"><circle cx="60" cy="140" r="2.4"/><circle cx="150" cy="100" r="3.2"/><circle cx="250" cy="150" r="2.4"/><circle cx="330" cy="110" r="2.8"/><circle cx="290" cy="230" r="2.2"/></g>
+  </svg>
+  <div class="sky" data-stars="10"></div><div class="grain"></div>
+  <div class="content">
+    <div class="h-disp" style="font-size:38px">Твои паттерны</div>
+    <div class="card" style="display:flex;align-items:center;gap:20px;margin-top:22px;border-color:rgba(233,200,126,.3)">
+      <div class="h-disp" style="font-size:58px;color:var(--gold);line-height:.9">12</div>
+      <div><div style="font-weight:700;font-size:15px">ночей подряд</div>
+      <div class="muted" style="font-size:12px;margin-top:4px">Личный рекорд. Луна довольна.</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="h-disp" style="font-size:27px">Вода</div>
+      <div class="muted" style="font-size:12.5px;line-height:1.55;margin-top:6px">3 раза за месяц · чаще в дни, когда ты отмечал тревогу</div>
+      <div class="dots" style="margin-top:16px"><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="eyebrow">Эмоции месяца</div>
+      <div style="margin-top:14px;font-size:12.5px;font-weight:600">Тревога<div class="bar"><i style="width:62%;background:var(--lilac)"></i></div></div>
+      <div style="margin-top:12px;font-size:12.5px;font-weight:600">Спокойствие<div class="bar"><i style="width:45%;background:linear-gradient(90deg,var(--gold-deep),var(--gold))"></i></div></div>
+      <div style="margin-top:12px;font-size:12.5px;font-weight:600">Радость<div class="bar"><i style="width:30%;background:linear-gradient(90deg,var(--gold),var(--champagne))"></i></div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:16px 20px;border-radius:20px;border:1px solid rgba(233,200,126,.35)">
+      <span style="color:var(--gold)">✦</span><span style="font-size:13px;font-weight:700;color:var(--champagne)">Отчёт месяца — глубокий разбор в Premium</span>
+    </div>
+  </div>
+</div><div class="ph-label">03 · Инсайты — созвездие паттернов</div></div>
+
+<!-- 04 ОНБОРДИНГ -->
+<div class="holder"><div class="phone">
+  <div class="neb"><i class="g1"></i><i class="g2"></i></div>
+  <div class="sky" data-stars="20"></div><div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow" style="margin-top:60px">Түс</div>
+    <div class="h-disp" style="font-size:46px;line-height:1.1;margin-top:16px">Сны тают<br>за 10 минут.<br><em style="color:var(--gold)">Мы успеем.</em></div>
+    <div class="muted" style="font-size:14.5px;line-height:1.7;margin-top:18px">Проснулся — нажал — рассказал. Түс запишет, растолкует и заметит то, что повторяется.</div>
+    <div class="kicker" style="margin-top:44px">Когда ты обычно просыпаешься?</div>
+    <div class="chips" style="margin-top:14px">
+      <span class="chip">05:30</span><span class="chip on">06:30</span><span class="chip">07:30</span><span class="chip">08:30</span><span class="chip">По-разному</span>
+    </div>
+    <div class="muted" style="font-size:12px;margin-top:12px">Разбудим вопрос «что снилось?» именно в это время</div>
+    <div style="margin-top:auto;margin-bottom:44px"><div class="cta">Продолжить</div></div>
+  </div>
+</div><div class="ph-label">04 · Онбординг — утренний ритуал</div></div>
+
+<!-- 05 ДНЕВНИК -->
+<div class="holder"><div class="phone flat">
+  <div class="neb"><i class="g2"></i></div>
+  <div class="sky" data-stars="8"></div><div class="grain"></div>
+  <div class="content">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <div class="h-disp" style="font-size:38px">Июль</div>
+      <div class="kicker">21 сон</div>
+    </div>
+    <div style="margin-top:18px;height:44px;border-radius:22px;border:1px solid rgba(167,155,200,.2);display:flex;align-items:center;padding:0 18px;color:var(--lilac-dim);font-size:13px">⌕&nbsp;&nbsp;Найти сон — «вода», «бабушкин дом»…</div>
+    <div style="margin-top:10px">
+      <div class="entry"><div class="eday">13<small>ВС</small></div><div><div class="etitle">Вода зовёт к переменам</div><div class="esub">Озеро, дом у берега, тихо</div><div class="chips" style="margin-top:8px"><span class="tag">Вода</span><span class="tag">Дом</span></div></div></div>
+      <div class="entry"><div class="eday">12<small>СБ</small></div><div><div class="etitle">Полёт над Астаной</div><div class="esub">Летел над Байтереком, ветер тёплый</div><div class="chips" style="margin-top:8px"><span class="tag">Полёт</span><span class="tag">Город</span></div></div></div>
+      <div class="entry"><div class="eday">11<small>ПТ</small></div><div><div class="etitle">Экзамен без билетов</div><div class="esub">Аудитория, все пишут, у меня пустой лист</div><div class="chips" style="margin-top:8px"><span class="tag">Экзамен</span><span class="tag">Тревога</span></div></div></div>
+      <div class="entry" style="border:none"><div class="eday">09<small>СР</small></div><div><div class="etitle">Бабушкин двор</div><div class="esub">Запах хлеба, вечер, кто-то ждёт</div><div class="chips" style="margin-top:8px"><span class="tag">Дом</span><span class="tag">Детство</span></div></div></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>Сон</div>
+    <div class="tab on"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13z"/></svg>Дневник</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8 3 4"/></svg>Инсайты</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>Профиль</div>
+  </div>
+</div><div class="ph-label">05 · Дневник</div></div>
+
+<!-- 06 SHARE-КАРТОЧКА -->
+<div class="holder"><div class="phone">
+  <div class="sky" data-stars="10"></div><div class="grain"></div>
+  <div class="content" style="align-items:center;text-align:center">
+    <div class="kicker">Карта сна готова</div>
+    <div class="story">
+      <div class="sky" data-stars="14"></div>
+      <div class="content">
+        <div class="eyebrow" style="font-size:9px">Түс · 13 июля</div>
+        <div class="h-disp" style="font-size:31px;line-height:1.15;margin-top:16px;text-align:left">Вода зовёт<br>к переменам</div>
+        <div style="text-align:left;font-size:12px;line-height:1.65;color:var(--lilac);margin-top:14px">«Часть тебя готова к переменам, но хочет сохранить чувство безопасности»</div>
+        <div style="margin-top:auto;margin-bottom:26px;display:flex;justify-content:space-between;align-items:flex-end">
+          <div style="text-align:left"><div style="font-size:10px;letter-spacing:.14em;color:var(--lilac-dim);font-weight:700">СИМВОЛЫ</div><div style="font-size:12px;color:var(--champagne);font-weight:600;margin-top:4px">Вода · Дом · Берег</div></div>
+          <div class="h-disp" style="font-size:22px;color:var(--gold)">түс</div>
+        </div>
+      </div>
+    </div>
+    <div style="width:100%;margin-top:auto;margin-bottom:44px">
+      <div class="cta">Поделиться в сторис</div>
+      <div class="ghost">Сохранить в галерею</div>
+    </div>
+  </div>
+</div><div class="ph-label">06 · Share-карточка — виральная петля</div></div>
+
+<!-- 07 ОТЧЁТ МЕСЯЦА -->
+<div class="holder"><div class="phone">
+  <div class="neb"><i class="g1"></i><i class="g2"></i></div>
+  <div class="sky" data-stars="16"></div><div class="grain"></div>
+  <div class="content">
+    <div class="eyebrow">Отчёт месяца · Premium</div>
+    <div class="h-disp" style="font-size:44px;line-height:1.08;margin-top:12px">Июль<br>в твоих снах</div>
+    <div style="display:flex;gap:26px;margin-top:26px">
+      <div><div class="h-disp" style="font-size:44px;color:var(--gold)">21</div><div class="kicker" style="margin-top:2px">сон</div></div>
+      <div><div class="h-disp" style="font-size:44px;color:var(--gold)">6</div><div class="kicker" style="margin-top:2px">символов</div></div>
+      <div><div class="h-disp" style="font-size:44px;color:var(--gold)">2</div><div class="kicker" style="margin-top:2px">паттерна</div></div>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <div class="eyebrow">Главный символ</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px">
+        <div class="h-disp" style="font-size:27px">Вода</div><div class="muted" style="font-size:12px">×3 · растёт</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px">
+        <div class="h-disp" style="font-size:20px;color:rgba(245,242,251,.75)">Дом</div><div class="muted" style="font-size:12px">×2</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px">
+        <div class="h-disp" style="font-size:20px;color:rgba(245,242,251,.55)">Полёт</div><div class="muted" style="font-size:12px">×2</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="eyebrow">Дуга месяца</div>
+      <svg viewBox="0 0 300 70" style="width:100%;margin-top:10px">
+        <path d="M0 52 C 50 60, 90 24, 140 30 S 250 10, 300 18" stroke="url(#g)" stroke-width="2" fill="none"/>
+        <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#7B6FA0"/><stop offset="1" stop-color="#E9C87E"/></linearGradient></defs>
+        <circle cx="300" cy="18" r="3.4" fill="#E9C87E"/>
+      </svg>
+      <div class="muted" style="font-size:12.5px;line-height:1.6;margin-top:8px">От тревожных сюжетов в начале месяца — к спокойным у воды. Что-то отпустило.</div>
+    </div>
+  </div>
+</div><div class="ph-label">07 · Отчёт месяца — «Wrapped снов»</div></div>
+
+<!-- 08 ДИАЛОГ СО СНОМ -->
+<div class="holder"><div class="phone flat">
+  <div class="neb"><i class="g2"></i></div>
+  <div class="sky" data-stars="8"></div><div class="grain"></div>
+  <div class="content">
+    <div class="muted" style="font-size:14px;font-weight:500">‹&nbsp;&nbsp;Вода зовёт к переменам</div>
+    <div class="eyebrow" style="margin-top:22px">Диалог со сном</div>
+    <div class="bub ai" style="margin-top:18px">В твоём сне дом стоял у самой воды. Дома во снах часто отражают «я». Чей это был дом?</div>
+    <div class="bub me">Кажется, бабушкин. Я там был в детстве</div>
+    <div class="bub ai">Это меняет прочтение: бабушкин дом — место, где было безопасно. Сон соединяет перемены (вода) с потребностью в старой опоре. Похоже на период, когда ты решаешься на новое — держась за то, что уже любишь.</div>
+    <div class="bub me">Да, я как раз запускаю свой проект…</div>
+  </div>
+  <div class="ask">Спросить о сне…<div class="mic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div></div>
+  <div class="tabbar">
+    <div class="tab on"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>Сон</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13z"/></svg>Дневник</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 6-8 3 4"/></svg>Инсайты</div>
+    <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>Профиль</div>
+  </div>
+</div><div class="ph-label">08 · Диалог со сном — Premium</div></div>
+
+<!-- 09 PAYWALL -->
+<div class="holder"><div class="phone">
+  <div class="neb"><i class="g1"></i><i class="g2"></i></div>
+  <div class="sky" data-stars="16"></div><div class="grain"></div>
+  <div class="content" style="text-align:center;align-items:center">
+    <div style="width:56px;height:56px;border-radius:50%;margin-top:16px;background:radial-gradient(circle at 62% 40%,#FBF3E0,var(--gold) 70%);box-shadow:-14px 0 0 0 #151030 inset,0 0 50px rgba(233,200,126,.45)"></div>
+    <div class="h-disp" style="font-size:42px;margin-top:22px">Түс <em style="color:var(--champagne)">Premium</em></div>
+    <div class="muted" style="font-size:14px;margin-top:8px">Пойми, о чём твои сны говорят на самом деле</div>
+    <div style="text-align:left;width:100%;margin-top:28px;font-size:14px;font-weight:600;line-height:2.3">
+      <div><span style="color:var(--gold)">✦</span>&nbsp;&nbsp;Безлимитные толкования и все линзы</div>
+      <div><span style="color:var(--gold)">✦</span>&nbsp;&nbsp;Паттерны и Отчёт месяца</div>
+      <div><span style="color:var(--gold)">✦</span>&nbsp;&nbsp;Диалог со сном</div>
+      <div><span style="color:var(--gold)">✦</span>&nbsp;&nbsp;Визуализация снов картинами</div>
+    </div>
+    <div style="width:100%;margin-top:24px;padding:18px 20px;border-radius:20px;border:1.5px solid var(--gold);background:rgba(46,37,89,.4);display:flex;justify-content:space-between;align-items:center">
+      <div style="text-align:left"><div style="font-weight:800;font-size:16px">Год · 9 990 ₸</div><div class="muted" style="font-size:12px;margin-top:3px">832 ₸/мес · экономия 44%</div></div>
+      <div style="background:var(--gold);color:var(--midnight);font-size:10px;font-weight:800;letter-spacing:.1em;padding:6px 10px;border-radius:10px">ВЫГОДНО</div>
+    </div>
+    <div style="width:100%;margin-top:10px;padding:18px 20px;border-radius:20px;border:1px solid rgba(167,155,200,.25);text-align:left;font-weight:700;font-size:15px">Месяц · 1 490 ₸</div>
+    <div style="width:100%;margin-top:auto;margin-bottom:44px">
+      <div class="cta">Начать 7 дней бесплатно</div>
+      <div class="ghost">Отмена в любой момент · Сны остаются твоими</div>
+    </div>
+  </div>
+</div><div class="ph-label">09 · Paywall</div></div>
+
+</div>
+</div>
+
+<script>
+document.querySelectorAll('.sky').forEach(sky=>{
+  const n = +sky.dataset.stars || 12;
+  const w = sky.parentElement.offsetWidth || 390;
+  const h = sky.parentElement.offsetHeight || 844;
+  let seed = 7;
+  const rnd = ()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  for(let i=0;i<n;i++){
+    const s=document.createElement('i');
+    s.className='star'+(i%3===0?' tw':'');
+    const d=(rnd()*2.4+1.2).toFixed(1);
+    s.style.cssText=`width:${d}px;height:${d}px;left:${(rnd()*94+3).toFixed(1)}%;top:${(rnd()*60+4).toFixed(1)}%;opacity:${(rnd()*.5+.2).toFixed(2)};animation-delay:${(rnd()*4).toFixed(1)}s`;
+    sky.appendChild(s);
+  }
+});
+</script>
+</body>
+</html>

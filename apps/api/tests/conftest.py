@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Iterator
 from typing import Any
 
@@ -5,9 +6,18 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.auth import InvalidTokenError
 from app.db import engine, get_session
 from app.main import app
+from app.ratelimit import limiter
 from app.schemas.extraction import DreamExtraction, ExtractedEmotion, ExtractedSymbol
+
+
+def auth_headers(user_id: uuid.UUID) -> dict[str, str]:
+    """Tests act as a user by sending their UUID as the bearer token; the fake
+    verifier below turns it straight back into that user id."""
+    return {"Authorization": f"Bearer {user_id}"}
+
 
 # --- Fake Anthropic client -------------------------------------------------
 # Tests never hit a real provider. STT and embeddings are stubbed directly;
@@ -80,6 +90,25 @@ def mock_ai(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda audio, filename, language: "мокнутый транскрипт сна",
     )
     monkeypatch.setattr("app.services.embeddings.embed", lambda text: [0.0] * 1536)
+
+
+def _fake_verify_token(token: str) -> uuid.UUID:
+    try:
+        return uuid.UUID(token)
+    except ValueError as exc:
+        raise InvalidTokenError("not a valid test token") from exc
+
+
+@pytest.fixture(autouse=True)
+def mock_auth(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No real Supabase JWKS in tests: the bearer token *is* the user id.
+    A non-UUID token must still surface as 401, not a 500."""
+    monkeypatch.setattr("app.auth.verify_token", _fake_verify_token)
+
+
+@pytest.fixture(autouse=True)
+def no_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(limiter, "enabled", False)
 
 
 # --- DB session (rolled back per test) -------------------------------------

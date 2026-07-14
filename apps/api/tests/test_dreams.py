@@ -10,12 +10,14 @@ from app.models.dream_embedding import DreamEmbedding
 from app.models.dream_emotion import DreamEmotion
 from app.models.dream_symbol import DreamSymbol
 from app.models.interpretation import Interpretation
+from tests.conftest import auth_headers
 
 
 def _create_text_dream(client: TestClient, user_id: uuid.UUID) -> uuid.UUID:
     resp = client.post(
         "/dreams",
-        data={"user_id": str(user_id), "language": "ru", "text": "мне снилась вода"},
+        data={"language": "ru", "text": "мне снилась вода"},
+        headers=auth_headers(user_id),
     )
     assert resp.status_code == 200, resp.text
     return uuid.UUID(resp.json()["dream_id"])
@@ -24,7 +26,8 @@ def _create_text_dream(client: TestClient, user_id: uuid.UUID) -> uuid.UUID:
 def test_create_dream_text(client: TestClient) -> None:
     resp = client.post(
         "/dreams",
-        data={"user_id": str(uuid.uuid4()), "language": "ru", "text": "снилась вода"},
+        data={"language": "ru", "text": "снилась вода"},
+        headers=auth_headers(uuid.uuid4()),
     )
     assert resp.status_code == 200
     body = resp.json()
@@ -35,22 +38,27 @@ def test_create_dream_text(client: TestClient) -> None:
 def test_create_dream_audio_transcribes(client: TestClient) -> None:
     resp = client.post(
         "/dreams",
-        data={"user_id": str(uuid.uuid4()), "language": "kk"},
+        data={"language": "kk"},
         files={"audio": ("dream.m4a", b"\x00\x01\x02", "audio/m4a")},
+        headers=auth_headers(uuid.uuid4()),
     )
     assert resp.status_code == 200
     assert resp.json()["transcript"] == "мокнутый транскрипт сна"
 
 
 def test_create_dream_requires_exactly_one_input(client: TestClient) -> None:
-    resp = client.post("/dreams", data={"user_id": str(uuid.uuid4()), "language": "ru"})
+    resp = client.post("/dreams", data={"language": "ru"}, headers=auth_headers(uuid.uuid4()))
     assert resp.status_code == 422
 
 
 def test_update_transcript(client: TestClient) -> None:
     user_id = uuid.uuid4()
     dream_id = _create_text_dream(client, user_id)
-    resp = client.patch(f"/dreams/{dream_id}/transcript", json={"transcript": "исправленный текст"})
+    resp = client.patch(
+        f"/dreams/{dream_id}/transcript",
+        json={"transcript": "исправленный текст"},
+        headers=auth_headers(user_id),
+    )
     assert resp.status_code == 200
     assert resp.json()["transcript"] == "исправленный текст"
 
@@ -59,7 +67,11 @@ def test_interpret_persists_pipeline_rows(client: TestClient, db_session: Sessio
     user_id = uuid.uuid4()
     dream_id = _create_text_dream(client, user_id)
 
-    resp = client.post(f"/dreams/{dream_id}/interpret", params={"lens": "psych"})
+    resp = client.post(
+        f"/dreams/{dream_id}/interpret",
+        params={"lens": "psych"},
+        headers=auth_headers(user_id),
+    )
     assert resp.status_code == 200, resp.text
     body = resp.json()
     assert body["lens"] == "psych"
@@ -96,13 +108,22 @@ def test_interpret_persists_pipeline_rows(client: TestClient, db_session: Sessio
 
 
 def test_interpret_rejects_unknown_lens(client: TestClient) -> None:
-    dream_id = _create_text_dream(client, uuid.uuid4())
-    resp = client.post(f"/dreams/{dream_id}/interpret", params={"lens": "astrology"})
+    user_id = uuid.uuid4()
+    dream_id = _create_text_dream(client, user_id)
+    resp = client.post(
+        f"/dreams/{dream_id}/interpret",
+        params={"lens": "astrology"},
+        headers=auth_headers(user_id),
+    )
     assert resp.status_code == 422
 
 
 def test_interpret_missing_dream_404(client: TestClient) -> None:
-    resp = client.post(f"/dreams/{uuid.uuid4()}/interpret", params={"lens": "psych"})
+    resp = client.post(
+        f"/dreams/{uuid.uuid4()}/interpret",
+        params={"lens": "psych"},
+        headers=auth_headers(uuid.uuid4()),
+    )
     assert resp.status_code == 404
 
 
@@ -110,6 +131,7 @@ def test_body_size_limit(client: TestClient, monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(settings, "max_upload_bytes", 5)
     resp = client.post(
         "/dreams",
-        data={"user_id": str(uuid.uuid4()), "language": "ru", "text": "длинный текст"},
+        data={"language": "ru", "text": "длинный текст"},
+        headers=auth_headers(uuid.uuid4()),
     )
     assert resp.status_code == 413

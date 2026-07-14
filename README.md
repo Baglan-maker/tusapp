@@ -32,3 +32,29 @@ cd apps/mobile
 npm install
 npx expo start
 ```
+
+## Deployment
+
+**Supabase** (Postgres + Auth)
+
+1. Create the project. Copy the connection string into `DATABASE_URL`, switching the
+   driver: `postgresql+psycopg://…`.
+2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`. The API verifies client JWTs against
+   `$SUPABASE_URL/auth/v1/.well-known/jwks.json`.
+3. Enable the auth providers (Apple / Google / email).
+4. Apply row-level security **once** — it is deliberately not in the Alembic chain,
+   because `auth.uid()` does not exist in local/CI Postgres:
+   ```bash
+   psql "$SUPABASE_DB_URL" -f supabase/rls.sql
+   ```
+   RLS is defense-in-depth only: the API connects with the service key (which bypasses
+   RLS) and is the real authorization boundary.
+
+**Railway** (API)
+
+1. New service from this repo, **root directory `apps/api`** — it builds the Dockerfile.
+2. Set the env vars from [.env.example](.env.example) (DB, Supabase, AI keys).
+3. Add repo secrets `RAILWAY_TOKEN` and `RAILWAY_SERVICE`. The `deploy` job in
+   [CI](.github/workflows/ci.yml) runs on `main` **only after lint, typecheck and tests
+   are green**.
+4. Migrations need no separate step: the container runs `alembic upgrade head` on boot.

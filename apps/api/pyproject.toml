@@ -17,6 +17,8 @@ dependencies = [
     "openai>=1.54",
     "groq>=0.13",
     "httpx>=0.27",
+    "pyjwt[crypto]>=2.9",
+    "slowapi>=0.1.9",
 ]
 
 [dependency-groups]
@@ -25,6 +27,9 @@ dev = [
     "mypy>=1.13",
     "pytest>=8.3",
     "httpx>=0.27",
+    # Only used by scripts/eval_golden.py to compare Gemini against Claude.
+    # Deliberately a dev dep: it must not ship in the API image.
+    "google-genai>=1.0",
 ]
 
 [tool.ruff]

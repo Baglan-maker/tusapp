@@ -60,3 +60,26 @@ jobs:
         run: npm install
       - name: Typecheck (tsc)
         run: npx tsc --noEmit
+
+  deploy:
+    name: deploy api (railway)
+    needs: [api, mobile]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Deploy
+        # The Dockerfile runs `alembic upgrade head` on boot, so the prod DB
+        # migrates itself on each release.
+        run: railway up --service "$RAILWAY_SERVICE" --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE }}

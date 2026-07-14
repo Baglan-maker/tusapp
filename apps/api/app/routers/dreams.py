@@ -1,33 +1,40 @@
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_session
+from app.deps import current_user_id
 from app.models.dream import Dream
 from app.models.user import User
 from app.prompts import Lens
+from app.ratelimit import limiter
 from app.schemas.dream import (
     DreamCreateOut,
     InterpretationOut,
     TranscriptOut,
     TranscriptUpdate,
 )
-from app.services import pipeline, stt
+from app.services import pipeline, quota, stt
 
 router = APIRouter(prefix="/dreams", tags=["dreams"])
 
 Language = Literal["ru", "kk"]
 
+SessionDep = Annotated[Session, Depends(get_session)]
+UserDep = Annotated[uuid.UUID, Depends(current_user_id)]
+
 
 @router.post("", response_model=DreamCreateOut)
+@limiter.limit(settings.rate_limit)
 def create_dream(
-    session: Annotated[Session, Depends(get_session)],
-    user_id: Annotated[uuid.UUID, Form()],
+    request: Request,
+    session: SessionDep,
+    user_id: UserDep,
     language: Annotated[Language, Form()],
     text: Annotated[str | None, Form()] = None,
     audio: Annotated[UploadFile | None, File()] = None,
@@ -59,39 +66,60 @@ def create_dream(
 
 
 @router.patch("/{dream_id}/transcript", response_model=TranscriptOut)
+@limiter.limit(settings.rate_limit)
 def update_transcript(
-    session: Annotated[Session, Depends(get_session)],
+    request: Request,
+    session: SessionDep,
+    user_id: UserDep,
     dream_id: uuid.UUID,
     payload: TranscriptUpdate,
 ) -> TranscriptOut:
-    dream = _get_dream(session, dream_id)
+    dream = _get_own_dream(session, dream_id, user_id)
     dream.transcript = payload.transcript
     session.commit()
     return TranscriptOut(dream_id=dream.id, transcript=payload.transcript)
 
 
 @router.post("/{dream_id}/interpret", response_model=InterpretationOut)
+@limiter.limit(settings.rate_limit)
 def interpret(
-    session: Annotated[Session, Depends(get_session)],
+    request: Request,
+    session: SessionDep,
+    user_id: UserDep,
     dream_id: uuid.UUID,
     lens: Annotated[Lens, Query()],
 ) -> InterpretationOut:
-    dream = _get_dream(session, dream_id)
+    dream = _get_own_dream(session, dream_id, user_id)
     if not dream.transcript:
         raise HTTPException(400, "dream has no transcript yet")
+
+    try:
+        quota.check_interpretation_quota(session, user_id)
+    except quota.QuotaExceeded:
+        raise HTTPException(402, detail={"reason": "quota", "paywall": True}) from None
+
     interpretation = pipeline.interpret_dream(session, dream, lens)
+    quota.consume_interpretation(session, user_id)
     return InterpretationOut.model_validate(interpretation)
 
 
-def _get_dream(session: Session, dream_id: uuid.UUID) -> Dream:
-    dream = session.scalar(select(Dream).where(Dream.id == dream_id, Dream.deleted_at.is_(None)))
+def _get_own_dream(session: Session, dream_id: uuid.UUID, user_id: uuid.UUID) -> Dream:
+    """Fetch a dream owned by this user. Someone else's dream 404s — we do not
+    leak its existence."""
+    dream = session.scalar(
+        select(Dream).where(
+            Dream.id == dream_id,
+            Dream.user_id == user_id,
+            Dream.deleted_at.is_(None),
+        )
+    )
     if dream is None:
         raise HTTPException(404, "dream not found")
     return dream
 
 
 def _ensure_user(session: Session, user_id: uuid.UUID, language: str) -> None:
-    """Upsert a bare user row so the dream FK holds (auth arrives next slice)."""
+    """Upsert the user row (id == Supabase JWT `sub`) so the dream FK holds."""
     session.execute(
         insert(User)
         .values(id=user_id, locale=language)
