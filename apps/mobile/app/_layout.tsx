@@ -15,6 +15,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '../src/i18n';
+import { LocaleSync } from '../src/components/LocaleSync';
 import { QuotaError } from '../src/lib/api';
 import { colors } from '../src/theme/tokens';
 
@@ -49,6 +50,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
+        <LocaleSync />
         <StatusBar style="light" />
         <Stack
           screenOptions={{

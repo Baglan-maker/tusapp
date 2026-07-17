@@ -20,6 +20,9 @@ class UsageQuota(Base):
     interpretations_used: Mapped[int] = mapped_column(
         SmallInteger, nullable=False, server_default=text("0")
     )
+    transcriptions_used: Mapped[int] = mapped_column(
+        SmallInteger, nullable=False, server_default=text("0")
+    )
     chat_questions_used: Mapped[int] = mapped_column(
         SmallInteger, nullable=False, server_default=text("0")
     )

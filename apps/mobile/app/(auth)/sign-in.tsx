@@ -1,5 +1,6 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { makeRedirectUri } from 'expo-auth-session';
+import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,8 +15,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function SignIn() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function signInWithApple() {
@@ -44,13 +46,17 @@ export default function SignIn() {
   }
 
   async function signInWithEmail() {
+    const address = email.trim();
     setError(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: makeRedirectUri({ scheme: 'tus' }) },
-    });
-    if (error) return setError(error.message);
-    setSent(true);
+    setSending(true);
+    // No emailRedirectTo: we want a 6-digit OTP code, not a magic link.
+    const { error } = await supabase.auth.signInWithOtp({ email: address });
+    setSending(false);
+    if (error) {
+      console.error('[auth] signInWithOtp failed', error);
+      return setError(t('auth.sendError'));
+    }
+    router.push({ pathname: '/(auth)/verify', params: { email: address } });
   }
 
   return (
@@ -86,9 +92,9 @@ export default function SignIn() {
           style={styles.input}
         />
         <GoldButton
-          label={sent ? t('auth.emailSent') : t('auth.emailSend')}
+          label={t('auth.emailSend')}
           onPress={signInWithEmail}
-          disabled={!email.includes('@') || sent}
+          disabled={!email.includes('@') || sending}
         />
 
         {error && (
@@ -96,9 +102,6 @@ export default function SignIn() {
             {error}
           </Body>
         )}
-        <Body muted size={11} style={styles.note}>
-          {t('auth.devOnly')}
-        </Body>
       </View>
     </Screen>
   );
@@ -120,5 +123,4 @@ const styles = StyleSheet.create({
     fontFamily: fonts.medium,
     fontSize: 15,
   },
-  note: { textAlign: 'center', marginTop: spacing.xs },
 });

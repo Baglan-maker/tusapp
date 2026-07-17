@@ -90,6 +90,8 @@ def mock_ai(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda audio, filename, language: "мокнутый транскрипт сна",
     )
     monkeypatch.setattr("app.services.embeddings.embed", lambda text: [0.0] * 1536)
+    # Tests send tiny non-audio bytes; skip the real m4a duration parse.
+    monkeypatch.setattr("app.services.audio.duration_seconds", lambda data: 42.0)
 
 
 def _fake_verify_token(token: str) -> uuid.UUID:

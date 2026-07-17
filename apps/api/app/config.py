@@ -20,6 +20,12 @@ class Settings(BaseSettings):
 
     # Quotas / rate limiting
     free_daily_interpretations: int = 1
+    # Transcription is a separate, more expensive lever (STT $) and needs its own
+    # cap so a free account can't burn hours of ElevenLabs minutes.
+    free_daily_transcriptions: int = 5
+    # Hard server-side ceiling on audio length. The client caps at 120s, but the
+    # client is not a trust boundary — 10 MB of m4a is ~20 min otherwise.
+    max_audio_seconds: float = 130.0
     rate_limit: str = "30/minute"
 
     # Speech-to-text

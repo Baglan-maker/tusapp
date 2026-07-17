@@ -1,7 +1,17 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, Text, func, text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    text,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -15,6 +25,9 @@ class Interpretation(Base):
             "lens in ('psych','classic','ibn_sirin','science')",
             name="ck_interpretations_lens",
         ),
+        # One interpretation per (dream, lens): re-requesting is idempotent, not
+        # a fresh (paid, quota-consuming) run.
+        UniqueConstraint("dream_id", "lens", name="uq_interpretations_dream_lens"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

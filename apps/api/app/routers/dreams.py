@@ -17,6 +17,7 @@ from app.schemas.dream import (
     TranscriptOut,
     TranscriptUpdate,
 )
+from app.services import audio as audio_service
 from app.services import emotions, pipeline, quota, stt
 from app.services.users import ensure_user
 
@@ -51,16 +52,28 @@ def create_dream(
     if has_text == (audio is not None):
         raise HTTPException(422, "provide exactly one of `text` or `audio`")
 
+    ensure_user(session, user_id, language)
+
     if audio is not None:
         data = audio.file.read()
         if len(data) > settings.max_upload_bytes:
             raise HTTPException(413, "audio file too large")
+        try:
+            seconds = audio_service.duration_seconds(data)
+        except audio_service.InvalidAudioError:
+            raise HTTPException(422, "unreadable audio") from None
+        if seconds > settings.max_audio_seconds:
+            raise HTTPException(413, "audio too long")
+        try:
+            quota.check_transcription_quota(session, user_id)
+        except quota.QuotaExceeded as exc:
+            raise HTTPException(402, detail={"reason": exc.reason, "paywall": True}) from None
         transcript = stt.transcribe(data, audio.filename or "audio.m4a", language)
+        quota.consume_transcription(session, user_id)
     else:
         assert text is not None
         transcript = text.strip()
 
-    ensure_user(session, user_id, language)
     dream = Dream(user_id=user_id, transcript=transcript, language=language)
     session.add(dream)
     session.flush()
@@ -101,10 +114,17 @@ def interpret(
     if not dream.transcript:
         raise HTTPException(400, "dream has no transcript yet")
 
+    # Idempotent: re-opening a result (remount, refetch, retry) returns the
+    # stored interpretation — no LLM, no quota. A free user must never be
+    # paywalled out of their own already-generated interpretation.
+    existing = pipeline.find_interpretation(session, dream.id, lens)
+    if existing is not None:
+        return InterpretationOut.model_validate(existing)
+
     try:
         quota.check_interpretation_quota(session, user_id)
-    except quota.QuotaExceeded:
-        raise HTTPException(402, detail={"reason": "quota", "paywall": True}) from None
+    except quota.QuotaExceeded as exc:
+        raise HTTPException(402, detail={"reason": exc.reason, "paywall": True}) from None
 
     interpretation = pipeline.interpret_dream(session, dream, lens)
     quota.consume_interpretation(session, user_id)

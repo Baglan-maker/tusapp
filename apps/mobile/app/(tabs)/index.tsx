@@ -41,10 +41,19 @@ function mmss(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+const LANGUAGES: { value: AppLocale; label: string }[] = [
+  { value: 'ru', label: 'Русский' },
+  { value: 'kk', label: 'Қазақша' },
+];
+
 export default function RecordScreen() {
   const { t } = useTranslation();
   const { data: profile } = useProfile();
-  const language: AppLocale = profile?.locale ?? 'ru';
+  // Language defaults to the profile but is overridable per recording: in KZ a
+  // Kazakh-first user routinely tells a dream in Russian (and vice versa), and
+  // this picks the STT route (ru->Groq, kk->ElevenLabs) + the answer language.
+  const [langOverride, setLangOverride] = useState<AppLocale | null>(null);
+  const language: AppLocale = langOverride ?? profile?.locale ?? 'ru';
 
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -97,7 +106,12 @@ export default function RecordScreen() {
     },
     onSuccess: (dream) => {
       reset();
-      router.push(`/dream/${dream.dream_id}/transcript`);
+      // Pass the transcript through so the edit screen isn't blank (there's no
+      // GET /dreams/{id} yet).
+      router.push({
+        pathname: '/dream/[id]/transcript',
+        params: { id: dream.dream_id, text: dream.transcript ?? '' },
+      });
     },
   });
 
@@ -167,6 +181,18 @@ export default function RecordScreen() {
     <Screen style={styles.screen} stars={20}>
       <View style={styles.header}>
         <Display size={34}>{t('record.greeting')}</Display>
+        {phase === 'idle' && (
+          <Row style={styles.langRow}>
+            {LANGUAGES.map((l) => (
+              <Chip
+                key={l.value}
+                label={l.label}
+                active={language === l.value}
+                onPress={() => setLangOverride(l.value)}
+              />
+            ))}
+          </Row>
+        )}
       </View>
 
       <View style={styles.center}>
@@ -188,6 +214,7 @@ export default function RecordScreen() {
 
 const styles = StyleSheet.create({
   screen: { justifyContent: 'space-between' },
-  header: { marginTop: spacing.lg },
+  header: { marginTop: spacing.lg, gap: spacing.md },
+  langRow: { gap: spacing.sm },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginBottom: 60 },
 });

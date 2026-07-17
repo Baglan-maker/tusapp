@@ -1,5 +1,6 @@
 """Orchestrates the interpretation pipeline for one dream + lens."""
 
+import logging
 import uuid
 
 from sqlalchemy import select
@@ -15,6 +16,21 @@ from app.models.symbol import Symbol
 from app.prompts import Lens
 from app.schemas.extraction import DreamExtraction
 from app.services import context, embeddings, emotions, llm
+
+logger = logging.getLogger(__name__)
+
+
+def find_interpretation(session: Session, dream_id: uuid.UUID, lens: Lens) -> Interpretation | None:
+    """Return an already-computed interpretation for this (dream, lens), if any.
+
+    The router returns this without touching the LLM or the quota — re-opening a
+    result must be free.
+    """
+    return session.scalar(
+        select(Interpretation).where(
+            Interpretation.dream_id == dream_id, Interpretation.lens == lens.value
+        )
+    )
 
 
 def interpret_dream(session: Session, dream: Dream, lens: Lens) -> Interpretation:
@@ -39,7 +55,12 @@ def interpret_dream(session: Session, dream: Dream, lens: Lens) -> Interpretatio
         transcript=dream.transcript,
     )
 
-    _persist_embedding(session, dream.id, dream.transcript)
+    # Best-effort: the embedding only feeds the (future) pattern engine. If
+    # OpenAI is down we must NOT lose the interpretation the user just paid for.
+    try:
+        _persist_embedding(session, dream.id, dream.transcript)
+    except Exception:
+        logger.exception("embedding failed for dream %s; continuing", dream.id)
 
     interpretation = Interpretation(
         dream_id=dream.id,
